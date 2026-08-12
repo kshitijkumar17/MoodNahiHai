@@ -3,7 +3,7 @@ import { FaPause, FaPlay, FaStepBackward, FaStepForward } from "react-icons/fa";
 import { FaShuffle } from "react-icons/fa6";
 import { RiPlayListLine } from "react-icons/ri";
 
-const API_BASE_URL = "/api";
+const API_BASE_URL = "";
 
 function MusicPlayer({
   tracks,

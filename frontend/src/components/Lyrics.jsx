@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
-const API_BASE_URL = "/api";
+const API_BASE_URL = "";
 
 function Lyrics({
   videoId,

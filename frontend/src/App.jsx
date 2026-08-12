@@ -8,7 +8,8 @@ const EMPTY_TRACKS = [];
 const PRESENCE_KEY = "mnhy-active-listeners";
 const PRESENCE_HEARTBEAT_MS = 5000;
 const PRESENCE_EXPIRY_MS = 15000;
-const API_BASE_URL = "/api";
+// API requests stay same-origin in production and are proxied by Vite locally.
+const API_BASE_URL = "";
 
 function createSessionId() {
   if (
