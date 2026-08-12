@@ -27,7 +27,7 @@ Vite proxies `/api/*` requests to `http://127.0.0.1:5001` during `npm run dev`.
 This repo is configured for a single Vercel project:
 
 - static frontend output comes from `frontend/dist`
-- Python serverless handling comes from `api/index.py`
+- Python serverless handling comes from file-based functions in `api/`
 - frontend and backend share the same origin in production
 
 ### GitHub auto-deploy flow
