@@ -141,9 +141,6 @@ def get_audio_url(video_id):
         "quiet": True,
         "no_warnings": True,
         "noplaylist": True,
-        "js_runtimes": {
-            "deno": {}
-        },
     }
 
     with YoutubeDL(options) as ydl:
