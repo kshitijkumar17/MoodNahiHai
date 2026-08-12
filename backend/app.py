@@ -159,6 +159,7 @@ def get_audio_url(video_id):
     }
 
 
+@app.route("/playlist")
 @app.route("/api/playlist")
 def get_playlist():
     try:
@@ -171,6 +172,7 @@ def get_playlist():
         }), 500
 
 
+@app.route("/song/<video_id>")
 @app.route("/api/song/<video_id>")
 def get_song(video_id):
     try:
@@ -190,6 +192,7 @@ def get_song(video_id):
             "error": "Unable to get audio stream"
         }), 500
 
+@app.route("/lyrics/<video_id>")
 @app.route("/api/lyrics/<video_id>")
 def get_lyrics(video_id):
     try:
