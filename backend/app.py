@@ -1,5 +1,6 @@
-from flask import Flask, jsonify
+from flask import Flask, Response, jsonify, request, stream_with_context
 from flask_cors import CORS
+import requests
 from ytmusicapi import YTMusic
 from ytmusicapi.parsers.playlists import (
     parse_playlist_items,
@@ -141,6 +142,13 @@ def get_audio_url(video_id):
         "quiet": True,
         "no_warnings": True,
         "noplaylist": True,
+        "js_runtimes": {},
+        "source_address": "0.0.0.0",
+        "extractor_args": {
+            "youtube": {
+                "player_client": ["android_vr"],
+            },
+        },
     }
 
     with YoutubeDL(options) as ydl:
@@ -172,22 +180,69 @@ def get_playlist():
 @app.route("/song/<video_id>")
 @app.route("/api/song/<video_id>")
 def get_song(video_id):
+    return jsonify({
+        "videoId": video_id,
+        "audioUrl": f"/api/stream/{video_id}",
+    })
+
+
+@app.route("/stream/<video_id>")
+@app.route("/api/stream/<video_id>")
+def stream_song(video_id):
+    upstream = None
+
     try:
         audio = get_audio_url(video_id)
+        upstream_headers = {
+            "User-Agent": request.headers.get(
+                "User-Agent",
+                "Mozilla/5.0",
+            ),
+        }
 
+        if request.headers.get("Range"):
+            upstream_headers["Range"] = request.headers["Range"]
+
+        upstream = requests.get(
+            audio["url"],
+            headers=upstream_headers,
+            stream=True,
+            timeout=(10, 30),
+        )
+        upstream.raise_for_status()
+
+        response_headers = {
+            header: upstream.headers[header]
+            for header in (
+                "Accept-Ranges",
+                "Content-Length",
+                "Content-Range",
+                "Content-Type",
+            )
+            if header in upstream.headers
+        }
+
+        def generate_audio():
+            try:
+                yield from upstream.iter_content(chunk_size=64 * 1024)
+            finally:
+                upstream.close()
+
+        return Response(
+            stream_with_context(generate_audio()),
+            status=upstream.status_code,
+            headers=response_headers,
+            direct_passthrough=True,
+        )
+    except Exception as error:
+        if upstream is not None:
+            upstream.close()
+
+        print("Playback error:", error)
         return jsonify({
-            "videoId": video_id,
-            "title": audio["title"],
-            "duration": audio["duration"],
-            "audioUrl": audio["url"],
-        })
-
-    except Exception as e:
-        print("Playback error:", e)
-
-        return jsonify({
-            "error": "Unable to get audio stream"
-        }), 500
+            "error": "Unable to get audio stream",
+            "reason": str(error),
+        }), 502
 
 @app.route("/lyrics/<video_id>")
 @app.route("/api/lyrics/<video_id>")
